@@ -5,8 +5,9 @@
     "use": "@vercel/static-build",
     "config": { "zeroConfig": true }
   }],
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
   "routes": [
+
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
