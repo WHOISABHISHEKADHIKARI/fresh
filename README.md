@@ -277,4 +277,8 @@ For technical support or customization requests, please contact the development 
 
 **Fresh Masala** - Premium Organic Spices | From Our Farm to Every Flavorful Kitchen
 
-*Built with ❤️ for authentic flavors and premium quality*
+*Built with ❤️ for authentic flavors and premium quality*#   t u r i  
+ #   t u r i  
+ #   t u r i  
+ #   t u r i  
+ 
