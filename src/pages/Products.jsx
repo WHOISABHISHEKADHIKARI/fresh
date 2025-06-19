@@ -228,31 +228,32 @@ const LazyProductCard = ({ product, index, viewMode, calculateDiscount }) => {
 import { Star, ShoppingCart, Filter, Search, Grid, List } from 'lucide-react'
 import SkeletonLoader from '../components/SkeletonLoader'
 
-// Import product images
-import turmericImg from '../assets/images/Turmeric Powder 3D Box.jpg'
-import chiliImg from '../assets/images/Chilli Powder 3D Box.jpg'
-import blackPepperImg from '../assets/images/Black Pepper 3D Box.jpg'
-import corianderImg from '../assets/images/Coriander Powder 3D Box.jpg'
-import cuminImg from '../assets/images/Cumin Powder 3D Box.jpg'
-import chatMasalaImg from '../assets/images/Chat Masalaa 3D Box.jpg'
-import gingerImg from '../assets/images/Ginger Powder 3D Box.jpg'
-import whitePepperImg from '../assets/images/White Pepper 3D Box.jpg'
-import kashmiriMirchImg from '../assets/images/Kashmiri Mirch 3D Box.jpg'
-import chickenMasalaImg from '../assets/images/Chicken Masala 3D Box.jpg'
-import muttonMasalaImg from '../assets/images/Mutton Masala 3D Box.jpg'
-import mixMasalaImg from '../assets/images/Mix Masalaa 3D Box.jpg'
-// Additional product images
-import chatpateMasalaImg from '../assets/images/Chatpate Masala 3D Box.jpg'
-import chowmeinMasalaImg from '../assets/images/Chowmein Masala 3D Box.jpg'
-import fishMasalaImg from '../assets/images/Fish Masala 3D Box.jpg'
-import kasuriMethiImg from '../assets/images/Kasuri Methi 3D Box.jpg'
-import momoMasalaImg from '../assets/images/MOMO Masala 3D Box.jpg'
-import panipuriMasalaImg from '../assets/images/Panipuri Masala 3D Box.jpg'
-import sabjiMasalaImg from '../assets/images/Sabji Masala 3D Box.jpg'
-import sekuwaMasalaImg from '../assets/images/Sekuwa Masala 3D Box.jpg'
-import teaMasalaImg from '../assets/images/Tea Masala 3D Box.jpg'
-import timurPowderImg from '../assets/images/Timur Powder 3D Box.jpg'
-import gingerPowderImg from '../assets/images/Ginger Powder 3D Box.jpg'
+// Define image paths using public assets
+const productImages = {
+  turmericImg: '/assets/images/Turmeric Powder 3D Box.jpg',
+  chiliImg: '/assets/images/Chilli Powder 3D Box.jpg',
+  blackPepperImg: '/assets/images/Black Pepper 3D Box.jpg',
+  corianderImg: '/assets/images/Coriander Powder 3D Box.jpg',
+  cuminImg: '/assets/images/Cumin Powder 3D Box.jpg',
+  chatMasalaImg: '/assets/images/Chat Masalaa 3D Box.jpg',
+  gingerImg: '/assets/images/Ginger Powder 3D Box.jpg',
+  whitePepperImg: '/assets/images/White Pepper 3D Box.jpg',
+  kashmiriMirchImg: '/assets/images/Kashmiri Mirch 3D Box.jpg',
+  chickenMasalaImg: '/assets/images/Chicken Masala 3D Box.jpg',
+  muttonMasalaImg: '/assets/images/Mutton Masala 3D Box.jpg',
+  mixMasalaImg: '/assets/images/Mix Masalaa 3D Box.jpg',
+  chatpateMasalaImg: '/assets/images/Chatpate Masala 3D Box.jpg',
+  chowmeinMasalaImg: '/assets/images/Chowmein Masala 3D Box.jpg',
+  fishMasalaImg: '/assets/images/Fish Masala 3D Box.jpg',
+  kasuriMethiImg: '/assets/images/Kasuri Methi 3D Box.jpg',
+  momoMasalaImg: '/assets/images/MOMO Masala 3D Box.jpg',
+  panipuriMasalaImg: '/assets/images/Panipuri Masala 3D Box.jpg',
+  sabjiMasalaImg: '/assets/images/Sabji Masala 3D Box.jpg',
+  sekuwaMasalaImg: '/assets/images/Sekuwa Masala 3D Box.jpg',
+  teaMasalaImg: '/assets/images/Tea Masala 3D Box.jpg',
+  timurPowderImg: '/assets/images/Timur Powder 3D Box.jpg',
+  gingerPowderImg: '/assets/images/Ginger Powder 3D Box.jpg'
+};
 
 const Products = () => {
   const [products, setProducts] = useState([])
@@ -274,7 +275,7 @@ const Products = () => {
       originalPrice: 150,
       rating: 4.8,
       reviews: 245,
-      image: turmericImg,
+      image: productImages.turmericImg,
       description: 'Premium organic turmeric powder with high curcumin content',
       inStock: true,
       weight: '500g'
@@ -287,7 +288,7 @@ const Products = () => {
       originalPrice: 220,
       rating: 4.7,
       reviews: 189,
-      image: kashmiriMirchImg,
+      image: productImages.kashmiriMirchImg,
       description: 'Authentic Kashmiri red chillies known for their vibrant color and mild heat',
       inStock: true,
       weight: '250g'
@@ -300,7 +301,7 @@ const Products = () => {
       originalPrice: 250,
       rating: 4.9,
       reviews: 312,
-      image: blackPepperImg,
+      image: productImages.blackPepperImg,
       description: 'Premium black peppercorns with intense aroma and flavor',
       inStock: true,
       weight: '300g'
@@ -313,7 +314,7 @@ const Products = () => {
       originalPrice: 400,
       rating: 4.8,
       reviews: 178,
-      image: gingerImg,
+      image: productImages.gingerImg,
       description: 'Aromatic green cardamom pods from the highlands of Kerala',
       inStock: true,
       weight: '100g'
@@ -326,7 +327,7 @@ const Products = () => {
       originalPrice: 110,
       rating: 4.6,
       reviews: 156,
-      image: corianderImg,
+      image: productImages.corianderImg,
       description: 'Freshly ground coriander powder with citrusy notes',
       inStock: true,
       weight: '400g'
@@ -339,7 +340,7 @@ const Products = () => {
       originalPrice: 160,
       rating: 4.7,
       reviews: 203,
-      image: cuminImg,
+      image: productImages.cuminImg,
       description: 'Premium cumin seeds with intense aroma and earthy flavor',
       inStock: true,
       weight: '300g'
@@ -352,7 +353,7 @@ const Products = () => {
       originalPrice: 190,
       rating: 4.9,
       reviews: 267,
-      image: mixMasalaImg,
+      image: productImages.mixMasalaImg,
       description: 'Authentic garam masala blend with perfectly balanced spices',
       inStock: true,
       weight: '200g'
@@ -365,7 +366,7 @@ const Products = () => {
       originalPrice: 170,
       rating: 4.8,
       reviews: 192,
-      image: whitePepperImg,
+      image: productImages.whitePepperImg,
       description: 'Premium Ceylon cinnamon sticks with sweet and delicate flavor',
       inStock: true,
       weight: '150g'
@@ -378,7 +379,7 @@ const Products = () => {
       originalPrice: 100,
       rating: 4.5,
       reviews: 134,
-      image: chickenMasalaImg,
+      image: productImages.chickenMasalaImg,
       description: 'Aromatic fenugreek seeds with nutty flavor and health benefits',
       inStock: true,
       weight: '250g'
@@ -391,7 +392,7 @@ const Products = () => {
       originalPrice: 130,
       rating: 4.7,
       reviews: 178,
-      image: chatMasalaImg,
+      image: productImages.chatMasalaImg,
       description: 'Tangy and spicy chaat masala blend for snacks and chaats',
       inStock: true,
       weight: '150g'
@@ -404,7 +405,7 @@ const Products = () => {
       originalPrice: 260,
       rating: 4.8,
       reviews: 145,
-      image: muttonMasalaImg,
+      image: productImages.muttonMasalaImg,
       description: 'Aromatic whole cloves with intense flavor and aroma',
       inStock: true,
       weight: '100g'
@@ -417,7 +418,7 @@ const Products = () => {
       originalPrice: 120,
       rating: 4.6,
       reviews: 189,
-      image: chiliImg,
+      image: productImages.chiliImg,
       description: 'Hot and vibrant red chilli powder for spicy dishes',
       inStock: true,
       weight: '300g'
@@ -430,7 +431,7 @@ const Products = () => {
       originalPrice: 135,
       rating: 4.7,
       reviews: 156,
-      image: chatpateMasalaImg,
+      image: productImages.chatpateMasalaImg,
       description: 'Tangy and spicy chatpate masala blend for snacks and street food',
       inStock: true,
       weight: '200g'
@@ -443,7 +444,7 @@ const Products = () => {
       originalPrice: 145,
       rating: 4.8,
       reviews: 167,
-      image: chowmeinMasalaImg,
+      image: productImages.chowmeinMasalaImg,
       description: 'Authentic chowmein masala blend for perfect noodle dishes',
       inStock: true,
       weight: '150g'
@@ -456,7 +457,7 @@ const Products = () => {
       originalPrice: 165,
       rating: 4.6,
       reviews: 132,
-      image: fishMasalaImg,
+      image: productImages.fishMasalaImg,
       description: 'Special fish masala blend for delicious seafood dishes',
       inStock: true,
       weight: '150g'
@@ -469,7 +470,7 @@ const Products = () => {
       originalPrice: 115,
       rating: 4.5,
       reviews: 124,
-      image: kasuriMethiImg,
+      image: productImages.kasuriMethiImg,
       description: 'Dried fenugreek leaves with distinctive aroma and flavor',
       inStock: true,
       weight: '100g'
@@ -482,7 +483,7 @@ const Products = () => {
       originalPrice: 150,
       rating: 4.9,
       reviews: 215,
-      image: momoMasalaImg,
+      image: productImages.momoMasalaImg,
       description: 'Authentic momo masala blend for perfect dumplings',
       inStock: true,
       weight: '150g'
@@ -495,7 +496,7 @@ const Products = () => {
       originalPrice: 125,
       rating: 4.7,
       reviews: 176,
-      image: panipuriMasalaImg,
+      image: productImages.panipuriMasalaImg,
       description: 'Tangy and spicy panipuri masala for perfect street food experience',
       inStock: true,
       weight: '100g'
@@ -508,7 +509,7 @@ const Products = () => {
       originalPrice: 130,
       rating: 4.6,
       reviews: 143,
-      image: sabjiMasalaImg,
+      image: productImages.sabjiMasalaImg,
       description: 'Perfect blend for enhancing vegetable dishes with authentic flavor',
       inStock: true,
       weight: '200g'
@@ -521,7 +522,7 @@ const Products = () => {
       originalPrice: 170,
       rating: 4.8,
       reviews: 187,
-      image: sekuwaMasalaImg,
+      image: productImages.sekuwaMasalaImg,
       description: 'Traditional sekuwa masala blend for perfect grilled meat dishes',
       inStock: true,
       weight: '150g'
@@ -534,7 +535,7 @@ const Products = () => {
       originalPrice: 115,
       rating: 4.7,
       reviews: 156,
-      image: teaMasalaImg,
+      image: productImages.teaMasalaImg,
       description: 'Aromatic tea masala blend for perfect masala chai',
       inStock: true,
       weight: '100g'
@@ -547,7 +548,7 @@ const Products = () => {
       originalPrice: 190,
       rating: 4.6,
       reviews: 142,
-      image: timurPowderImg,
+      image: productImages.timurPowderImg,
       description: 'Authentic Himalayan timur (Sichuan pepper) powder with unique citrusy flavor',
       inStock: true,
       weight: '100g'
@@ -560,7 +561,7 @@ const Products = () => {
       originalPrice: 140,
       rating: 4.5,
       reviews: 138,
-      image: gingerPowderImg,
+      image: productImages.gingerPowderImg,
       description: 'Premium ginger powder with warm, spicy flavor for cooking and beverages',
       inStock: true,
       weight: '150g'
@@ -573,7 +574,7 @@ const Products = () => {
       originalPrice: 160,
       rating: 4.7,
       reviews: 152,
-      image: kashmiriMirchImg,
+      image: productImages.kashmiriMirchImg,
       description: 'Vibrant Kashmiri chili powder with rich color and mild heat',
       inStock: true,
       weight: '200g'
@@ -586,7 +587,7 @@ const Products = () => {
       originalPrice: 175,
       rating: 4.8,
       reviews: 195,
-      image: mixMasalaImg,
+      image: productImages.mixMasalaImg,
       description: 'All-purpose mix masala blend for versatile cooking applications',
       inStock: true,
       weight: '250g'

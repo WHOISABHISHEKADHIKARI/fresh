@@ -71,16 +71,12 @@ const Navbar = () => {
         <div className="container-custom">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-red via-accent-orange to-red-600 rounded-full shadow-lg ring-2 ring-red-100 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
-                <span className="text-white font-bold text-xl">FM</span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 group-hover:text-primary-red transition-colors duration-300">
-                  Fresh Masala
-                </h2>
-                <p className="text-sm text-gray-600 -mt-1">Premium Organic Spices</p>
-              </div>
+            <Link to="/" className="group">
+              <img 
+                src="./assets/images/logo.jpg" 
+                alt="Fresh Masala Logo" 
+                className="w-16 h-16 rounded-full shadow-lg ring-2 ring-red-100 transform group-hover:scale-105 transition-transform duration-300 object-cover"
+              />
             </Link>
 
             {/* Desktop Navigation */}

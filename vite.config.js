@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // Add base path to ensure assets are resolved correctly
+  base: './',
   plugins: [
     react(),
     VitePWA({
