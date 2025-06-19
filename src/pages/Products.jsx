@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Star, ShoppingCart, Filter, Search, Grid, List } from 'lucide-react'
 
+// Products component - displays all available spice products
 const Products = () => {
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
