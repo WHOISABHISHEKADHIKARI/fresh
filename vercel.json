@@ -1,10 +1,7 @@
 {
   "version": 2,
-  "builds": [{
-    "src": "package.json",
-    "use": "@vercel/static-build",
-    "config": { "zeroConfig": true }
-  }],
+  "buildCommand": "npm run build",
+  "framework": "vite",
   "outputDirectory": "dist",
   "routes": [
 
