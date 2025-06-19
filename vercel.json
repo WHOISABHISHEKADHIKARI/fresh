@@ -3,7 +3,10 @@
   "builds": [{
     "src": "package.json",
     "use": "@vercel/static",
-    "config": { "distDir": "dist" }
+    "config": { 
+      "distDir": "dist",
+      "publicDir": "public"
+    }
   }],
   "outputDirectory": "dist",
   "routes": [
