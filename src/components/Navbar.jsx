@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Phone, Mail } from 'lucide-react'
+import logoImage from '../assets/images/logo.jpg'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -73,7 +74,7 @@ const Navbar = () => {
             {/* Logo */}
             <Link to="/" className="group">
               <img 
-                src="./assets/images/logo.jpg" 
+                src={logoImage} 
                 alt="Fresh Masala Logo" 
                 className="w-16 h-16 rounded-full shadow-lg ring-2 ring-red-100 transform group-hover:scale-105 transition-transform duration-300 object-cover"
               />
