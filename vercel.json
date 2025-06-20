@@ -2,18 +2,7 @@
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist",
-        "buildCommand": "chmod +x ./node_modules/.bin/vite && npm run build",
-        "installCommand": "npm ci --prefer-offline",
-        "maxLambdaSize": "50mb"
-      }
-    }
-  ],
+
   "headers": [
     {
       "source": "/(.*)",
