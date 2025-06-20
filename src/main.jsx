@@ -22,11 +22,14 @@ if ('serviceWorker' in navigator) {
 if (typeof window !== 'undefined') {
   // Web Vitals monitoring
   import('web-vitals').then((webVitals) => {
-    webVitals.getCLS(console.log);
-    webVitals.getFID(console.log);
-    webVitals.getFCP(console.log);
-    webVitals.getLCP(console.log);
-    webVitals.getTTFB(console.log);
+    // Web Vitals v5+ uses a different API
+    webVitals.onCLS(console.log);
+    webVitals.onFID(console.log);
+    webVitals.onFCP(console.log);
+    webVitals.onLCP(console.log);
+    webVitals.onTTFB(console.log);
+  }).catch(err => {
+    console.error('Error loading web-vitals:', err);
   });
 }
 

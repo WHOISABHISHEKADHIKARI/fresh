@@ -1,23 +1,26 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+ 
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Star, ShoppingCart, Filter, Grid, List, Search } from 'lucide-react';
 import { Helmet } from 'react-helmet-async'
 
 // Custom hook for intersection observer (lazy loading)
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef(null);
+  const observerRef = useRef(null);
 
   const callback = useCallback((entries) => {
     const [entry] = entries;
     setIsIntersecting(entry.isIntersecting);
     
     // Unobserve after intersection if once is true
-    if (entry.isIntersecting && options.once) {
-      observer.unobserve(entry.target);
+    if (entry.isIntersecting && options.once && observerRef.current) {
+      observerRef.current.unobserve(entry.target);
     }
   }, [options.once]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(callback, {
+    observerRef.current = new IntersectionObserver(callback, {
       root: options.root || null,
       rootMargin: options.rootMargin || '0px',
       threshold: options.threshold || 0,
@@ -26,12 +29,12 @@ const useIntersectionObserver = (options = {}) => {
     const currentRef = ref.current;
     
     if (currentRef) {
-      observer.observe(currentRef);
+      observerRef.current.observe(currentRef);
     }
     
     return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
+      if (currentRef && observerRef.current) {
+        observerRef.current.unobserve(currentRef);
       }
     };
   }, [callback, options.root, options.rootMargin, options.threshold]);
@@ -39,221 +42,225 @@ const useIntersectionObserver = (options = {}) => {
   return [ref, isIntersecting];
 };
 
-// LazyProductCard component for optimized rendering
 const LazyProductCard = ({ product, index, viewMode, calculateDiscount }) => {
   const [ref, isVisible] = useIntersectionObserver({
-    rootMargin: '200px 0px', // Load when within 200px of viewport
-    once: true // Only trigger once
+    rootMargin: '200px 0px',
+    once: true
   });
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Staggered animation delay based on index
-  const animationDelay = Math.min(index * 50, 500); // Cap at 500ms
+  const animationDelay = Math.min(index * 50, 500);
   
-  // Format price with locale
-  const formatPrice = (price) => {
-    return price.toFixed(2);
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
-  
-  // Only render full content when visible or close to viewport
+
+  const formatPrice = (price) => {
+    // Convert USD to NPR (1 USD = approximately 133 NPR as of 2023)
+    const nprPrice = price * 133;
+    // Format with thousand separators and 2 decimal places
+    return nprPrice.toLocaleString('en-NP', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+  };
+
+  const cardContent = (
+    <>
+      <div className="relative overflow-hidden group h-64">
+        {/* Low quality placeholder with blur effect */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center blur-sm transition-opacity duration-500"
+          style={{
+            backgroundColor: '#f5f5f5', // Fallback background color
+            backgroundImage: product.image ? `url(${product.image})` : 'none',
+            opacity: imageLoaded ? 0 : 1,
+            transform: 'scale(1.05)', // Slightly larger to prevent blur edges
+          }}
+          aria-hidden="true"
+        />
+        <img 
+          src={product.image || 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20fill%3D%22%23f5f5f5%22%20width%3D%22300%22%20height%3D%22300%22%2F%3E%3Ctext%20fill%3D%22%23999%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20dy%3D%22.3em%22%20text-anchor%3D%22middle%22%20x%3D%22150%22%20y%3D%22150%22%3EImage%20not%20available%3C%2Ftext%3E%3C%2Fsvg%3E'} 
+          alt={product.name} 
+          className="w-full h-full object-contain transition-all duration-500 group-hover:scale-110"
+          style={{ opacity: imageLoaded ? 1 : 0 }}
+          loading="lazy"
+          decoding="async"
+          width="300"
+          height="300"
+          fetchpriority={index < 4 ? "high" : "low"}
+          importance={index < 4 ? "high" : "low"}
+          referrerpolicy="no-referrer"
+          onLoad={handleImageLoad}
+          onError={(e) => {
+            console.log(`Error loading image for ${product.name}`);
+            e.target.onerror = null; // Prevent infinite error loop
+            // Use a data URI for a simple colored placeholder
+            e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20fill%3D%22%23f5f5f5%22%20width%3D%22300%22%20height%3D%22300%22%2F%3E%3Ctext%20fill%3D%22%23999%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20dy%3D%22.3em%22%20text-anchor%3D%22middle%22%20x%3D%22150%22%20y%3D%22150%22%3EImage%20not%20available%3C%2Ftext%3E%3C%2Fsvg%3E';
+            handleImageLoad(); // Mark as loaded even if it's the fallback image
+          }}
+        />
+        {product.originalPrice > product.price && (
+          <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-600 to-red-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
+            SALE
+          </div>
+        )}
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm">
+          <Star className="w-4 h-4 text-amber-600" fill="currentColor" />
+        </div>
+      </div>
+      <div className="p-4 flex flex-col flex-grow">
+        <p className="text-xs text-amber-700 font-medium mb-1">{product.category}</p>
+        <h3 className="font-semibold text-gray-800 mb-2 flex-grow line-clamp-2">{product.name}</h3>
+        <p className="text-sm text-gray-600 mb-3 line-clamp-3">{product.description}</p>
+        
+        <div className="mt-auto">
+          <div className="flex items-baseline gap-2 mb-3">
+            <p className="font-bold text-xl text-amber-700">₨ {formatPrice(product.price)}</p>
+            {product.originalPrice > product.price && (
+              <p className="text-sm text-gray-400 line-through">₨ {formatPrice(product.originalPrice)}</p>
+            )}
+          </div>
+          <a 
+            href={`https://wa.me/9779865412482?text=I'm%20interested%20in%20buying%20${encodeURIComponent(product.name)}%20for%20₨%20${formatPrice(product.price)}%20(${product.weight})`}
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full bg-gradient-to-r from-amber-600 to-red-600 text-white py-2.5 rounded-lg font-semibold hover:from-amber-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            Order Now
+          </a>
+        </div>
+      </div>
+    </>
+  );
+
   if (viewMode === 'list') {
     return (
       <div 
         ref={ref}
-        className={`bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row transition-all duration-300 hover:shadow-lg product-card transform-gpu backface-visibility-hidden ${isVisible ? 'animate-fadeIn' : 'opacity-0'}`}
+        className={`bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row transition-all duration-300 hover:shadow-xl hover:-translate-y-1 product-card transform-gpu ${isVisible ? 'animate-fadeIn' : 'opacity-0'}`}
         style={{ animationDelay: `${animationDelay}ms` }}
       >
-        {isVisible ? (
-          <>
-            {/* Product Image - List View */}
-            <div className="relative md:w-1/3 overflow-hidden group">
-              <img 
-                src={product.image} 
-                alt={product.name} 
-                className="w-full h-64 md:h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="eager" 
-                decoding="async"
-                fetchpriority="high"
-                onLoad={(e) => {
-                  console.log('Image loaded in component:', product.image);
-                  e.target.classList.add('loaded');
-                }}
-                onError={(e) => {
-                  console.log('Image error in component:', product.image);
-                  // Fallback for image loading errors
-                  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNMTAwIDcwQzg5LjUgNzAgODEgNzguNSA4MSA4OUM4MSA5OS41IDg5LjUgMTA4IDEwMCAxMDhDMTEwLjUgMTA4IDExOSA5OS41IDExOSA4OUMxMTkgNzguNSAxMTAuNSA3MCAxMDAgNzBaTTEwMCAxMjBDNzguOSAxMjAgNjIgMTM2LjkgNjIgMTU4SDE0MEMxNDAgMTM2LjkgMTIxLjEgMTIwIDEwMCAxMjBaIiBmaWxsPSIjRTVFN0VCIi8+PC9zdmc+Cg==';
-                  e.target.classList.add('loaded');
-                }}
-              />
-              {product.originalPrice > product.price && (
-                <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
-                  {calculateDiscount(product.originalPrice, product.price)}% OFF
-                </div>
-              )}
-            </div>
-            {/* Product Details - List View */}
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm text-gray-500">{product.category}</p>
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 text-amber-500" fill="currentColor" />
-                    <span className="text-sm ml-1">{product.rating}</span>
-                  </div>
-                </div>
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">{product.name}</h3>
-                <p className="text-gray-600 mb-4">{product.description}</p>
-                <div className="flex items-center gap-3 mb-4">
-                  <p className="font-bold text-2xl text-gray-900">${formatPrice(product.price)}</p>
-                  {product.originalPrice > product.price && (
-                    <p className="text-lg text-gray-500 line-through">${formatPrice(product.originalPrice)}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-sm font-medium px-3 py-1 bg-gray-100 rounded-full">
-                    {product.weight}
-                  </span>
-                  <span className={`text-sm font-medium px-3 py-1 rounded-full ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                </div>
-              </div>
-              <a 
-                href={`https://wa.me/9779865412482?text=I'm%20interested%20in%20buying%20${encodeURIComponent(product.name)}%20(${encodeURIComponent(product.weight)})%20for%20$${product.price}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="mt-4 bg-green-500 text-white py-3 rounded-md font-medium hover:bg-green-600 transition-colors duration-300 flex items-center justify-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-                Buy Now on WhatsApp
-              </a>
-            </div>
-          </>
-        ) : (
-          // Lightweight placeholder for list view
-          <div className="w-full h-[200px] bg-gray-100 flex">
-            <div className="w-1/3 bg-gray-200"></div>
-            <div className="w-2/3 p-4">
-              <div className="h-6 bg-gray-200 w-1/3 mb-4 rounded"></div>
-              <div className="h-4 bg-gray-200 w-full mb-2 rounded"></div>
-              <div className="h-4 bg-gray-200 w-full mb-2 rounded"></div>
-            </div>
-          </div>
-        )}
+        {isVisible ? cardContent : <div className="w-full h-[200px] bg-gray-100 rounded-xl"></div>}
       </div>
     );
   }
-  
-  // Grid view (default)
+
   return (
     <div 
       ref={ref}
-      className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 product-card transform-gpu backface-visibility-hidden ${isVisible ? 'animate-fadeIn' : 'opacity-0'}`}
+      className={`bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 product-card transform-gpu ${isVisible ? 'animate-fadeIn' : 'opacity-0'}`}
       style={{ animationDelay: `${animationDelay}ms` }}
     >
-      {isVisible ? (
-        <>
-          <div className="relative overflow-hidden group">
-            <img 
-              src={product.image} 
-              alt={product.name} 
-              className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-              loading="eager"
-              decoding="async"
-              fetchpriority="high"
-              onLoad={(e) => {
-                console.log('Grid image loaded:', product.image);
-                e.target.classList.add('loaded');
-              }}
-              onError={(e) => {
-                console.log('Grid image error:', product.image);
-                // Fallback for image loading errors
-                e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNMTAwIDcwQzg5LjUgNzAgODEgNzguNSA4MSA4OUM4MSA5OS41IDg5LjUgMTA4IDEwMCAxMDhDMTEwLjUgMTA4IDExOSA5OS41IDExOSA4OUMxMTkgNzguNSAxMTAuNSA3MCAxMDAgNzBaTTEwMCAxMjBDNzguOSAxMjAgNjIgMTM2LjkgNjIgMTU4SDE0MEMxNDAgMTM2LjkgMTIxLjEgMTIwIDEwMCAxMjBaIiBmaWxsPSIjRTVFN0VCIi8+PC9zdmc+Cg==';
-                e.target.classList.add('loaded');
-              }}
-            />
-            {product.originalPrice > product.price && (
-              <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
-                {calculateDiscount(product.originalPrice, product.price)}% OFF
-              </div>
-            )}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-              <a 
-                href={`https://wa.me/9779865412482?text=I'm%20interested%20in%20buying%20${encodeURIComponent(product.name)}%20(${encodeURIComponent(product.weight)})%20for%20$${product.price}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-full bg-green-500 text-white py-2 rounded-md font-medium hover:bg-green-600 transition-colors duration-300 flex items-center justify-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
-                Buy Now
-              </a>
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-gray-500">{product.category}</p>
-              <div className="flex items-center">
-                <Star className="w-3 h-3 text-amber-500" fill="currentColor" />
-                <span className="text-xs ml-1">{product.rating}</span>
-              </div>
-            </div>
-            <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">{product.name}</h3>
-            <div className="flex items-center gap-2">
-              <p className="font-bold text-gray-900">${formatPrice(product.price)}</p>
-              {product.originalPrice > product.price && (
-                <p className="text-sm text-gray-500 line-through">${formatPrice(product.originalPrice)}</p>
-              )}
-            </div>
-            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs font-medium px-2 py-1 bg-gray-100 rounded-full">
-                {product.weight}
-              </span>
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                {product.inStock ? 'In Stock' : 'Out of Stock'}
-              </span>
-            </div>
-          </div>
-        </>
-      ) : (
-        // Lightweight placeholder when not visible
-        <div className="w-full h-[300px] bg-gray-100"></div>
-      )}
+      {isVisible ? cardContent : <div className="w-full h-[400px] bg-gray-100 rounded-xl"></div>}
     </div>
   );
 };
-import { Star, ShoppingCart, Filter, Search, Grid, List } from 'lucide-react'
-import SkeletonLoader from '../components/SkeletonLoader'
 
-// Define image paths using public assets
-const productImages = {
-  turmericImg: '/assets/images/Turmeric Powder 3D Box.jpg',
-  chiliImg: '/assets/images/Chilli Powder 3D Box.jpg',
-  blackPepperImg: '/assets/images/Black Pepper 3D Box.jpg',
-  corianderImg: '/assets/images/Coriander Powder 3D Box.jpg',
-  cuminImg: '/assets/images/Cumin Powder 3D Box.jpg',
-  chatMasalaImg: '/assets/images/Chat Masalaa 3D Box.jpg',
-  gingerImg: '/assets/images/Ginger Powder 3D Box.jpg',
-  whitePepperImg: '/assets/images/White Pepper 3D Box.jpg',
-  kashmiriMirchImg: '/assets/images/Kashmiri Mirch 3D Box.jpg',
-  chickenMasalaImg: '/assets/images/Chicken Masala 3D Box.jpg',
-  muttonMasalaImg: '/assets/images/Mutton Masala 3D Box.jpg',
-  mixMasalaImg: '/assets/images/Mix Masalaa 3D Box.jpg',
-  chatpateMasalaImg: '/assets/images/Chatpate Masala 3D Box.jpg',
-  chowmeinMasalaImg: '/assets/images/Chowmein Masala 3D Box.jpg',
-  fishMasalaImg: '/assets/images/Fish Masala 3D Box.jpg',
-  kasuriMethiImg: '/assets/images/Kasuri Methi 3D Box.jpg',
-  momoMasalaImg: '/assets/images/MOMO Masala 3D Box.jpg',
-  panipuriMasalaImg: '/assets/images/Panipuri Masala 3D Box.jpg',
-  sabjiMasalaImg: '/assets/images/Sabji Masala 3D Box.jpg',
-  sekuwaMasalaImg: '/assets/images/Sekuwa Masala 3D Box.jpg',
-  teaMasalaImg: '/assets/images/Tea Masala 3D Box.jpg',
-  timurPowderImg: '/assets/images/Timur Powder 3D Box.jpg',
-  gingerPowderImg: '/assets/images/Ginger Powder 3D Box.jpg'
+
+
+ 
+
+// Use dynamic imports for images to improve performance
+const importImage = (imagePath) => {
+  // Return from cache if available
+  if (imageCache.has(imagePath)) {
+    return imageCache.get(imagePath);
+  }
+
+  // Directly use the original format without WebP conversion for now
+  // This simplifies the image loading process and reduces potential errors
+  try {
+    const imageUrl = new URL(`../assets/images/${imagePath}`, import.meta.url).href;
+    
+    // Store in cache
+    imageCache.set(imagePath, imageUrl);
+    return imageUrl;
+  } catch (e) {
+    console.error(`Error loading image: ${imagePath}`, e);
+    // Return a placeholder image URL if the original image can't be loaded
+    const placeholderUrl = new URL('../assets/images/placeholder.jpg', import.meta.url).href;
+    imageCache.set(imagePath, placeholderUrl);
+    return placeholderUrl;
+  }
 };
+
+// Generate responsive image sources based on screen size
+const getResponsiveImageSrc = (imagePath) => {
+  if (!imagePath) {
+    console.error('No image path provided to getResponsiveImageSrc');
+    return {
+      small: '',
+      medium: '',
+      large: '',
+      placeholder: ''
+    };
+  }
+  
+  try {
+    const baseUrl = importImage(imagePath);
+    
+    // For actual implementation, you would need to have different sized versions of images
+    // This is a simplified example that returns the same image for all sizes
+    return {
+      small: baseUrl,  // For mobile
+      medium: baseUrl, // For tablets
+      large: baseUrl,  // Original size for desktop
+      placeholder: baseUrl // Same image for placeholder
+    };
+  } catch (error) {
+    console.error('Error in getResponsiveImageSrc:', error);
+    return {
+      small: '',
+      medium: '',
+      large: '',
+      placeholder: ''
+    };
+  }
+};
+
+// Define image paths for lazy loading
+const imagePaths = {
+  turmericImg: 'Turmeric Powder 3D Box.jpg',
+  chiliImg: 'Chilli Powder 3D Box.jpg',
+  blackPepperImg: 'Black Pepper 3D Box.jpg',
+  corianderImg: 'Coriander Powder 3D Box.jpg',
+  cuminImg: 'Cumin Powder 3D Box.jpg',
+  chatMasalaImg: 'Chat Masalaa 3D Box.jpg',
+  gingerImg: 'Ginger Powder 3D Box.jpg',
+  whitePepperImg: 'White Pepper 3D Box.jpg',
+  kashmiriMirchImg: 'Kashmiri Mirch 3D Box.jpg',
+  chickenMasalaImg: 'Chicken Masala 3D Box.jpg',
+  muttonMasalaImg: 'Mutton Masala 3D Box.jpg',
+  mixMasalaImg: 'Mix Masalaa 3D Box.jpg',
+  chatpateMasalaImg: 'Chatpate Masala 3D Box.jpg',
+  chowmeinMasalaImg: 'Chowmein Masala 3D Box.jpg',
+  fishMasalaImg: 'Fish Masala 3D Box.jpg',
+  kasuriMethiImg: 'Kasuri Methi 3D Box.jpg',
+  momoMasalaImg: 'MOMO Masala 3D Box.jpg',
+  panipuriMasalaImg: 'Panipuri Masala 3D Box.jpg',
+  sabjiMasalaImg: 'Sabji Masala 3D Box.jpg',
+  sekuwaMasalaImg: 'Sekuwa Masala 3D Box.jpg',
+  teaMasalaImg: 'Tea Masala 3D Box.jpg',
+  timurPowderImg: 'Timur Powder 3D Box.jpg',
+  gingerPowderImg: 'Ginger Powder 3D Box.jpg'
+};
+
+// Create a cache for loaded images to prevent redundant loading
+const imageCache = new Map();
+
+// Define product images object with dynamic imports
+const productImages = {};
+
+// Initialize product images with error handling
+Object.keys(imagePaths).forEach(key => {
+  try {
+    productImages[key] = importImage(imagePaths[key]);
+    console.log(`Loaded image: ${key}`);
+  } catch (error) {
+    console.error(`Failed to load image: ${key}`, error);
+    // Set a fallback image
+    productImages[key] = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22300%22%20height%3D%22300%22%20viewBox%3D%220%200%20300%20300%22%3E%3Crect%20fill%3D%22%23f5f5f5%22%20width%3D%22300%22%20height%3D%22300%22%2F%3E%3Ctext%20fill%3D%22%23999%22%20font-family%3D%22sans-serif%22%20font-size%3D%2224%22%20dy%3D%22.3em%22%20text-anchor%3D%22middle%22%20x%3D%22150%22%20y%3D%22150%22%3EImage%20not%20available%3C%2Ftext%3E%3C%2Fsvg%3E';
+  }
+});
 
 const Products = () => {
   const [products, setProducts] = useState([])
@@ -264,6 +271,18 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('name')
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [preloadedImages, setPreloadedImages] = useState(new Set())
+  
+  // Function to preload images
+  const preloadImage = useCallback((src) => {
+    if (preloadedImages.has(src)) return; // Skip if already preloaded
+    
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      setPreloadedImages(prev => new Set([...prev, src]));
+    };
+  }, [preloadedImages]);
 
   // Sample products data
   const allProducts = [
@@ -276,6 +295,7 @@ const Products = () => {
       rating: 4.8,
       reviews: 245,
       image: productImages.turmericImg,
+      imageKey: 'turmericImg',
       description: 'Premium organic turmeric powder with high curcumin content',
       inStock: true,
       weight: '500g'
@@ -289,6 +309,7 @@ const Products = () => {
       rating: 4.7,
       reviews: 189,
       image: productImages.kashmiriMirchImg,
+      imageKey: 'kashmiriMirchImg',
       description: 'Authentic Kashmiri red chillies known for their vibrant color and mild heat',
       inStock: true,
       weight: '250g'
@@ -301,6 +322,7 @@ const Products = () => {
       originalPrice: 250,
       rating: 4.9,
       reviews: 312,
+      imageKey: 'blackPepperImg',
       image: productImages.blackPepperImg,
       description: 'Premium black peppercorns with intense aroma and flavor',
       inStock: true,
@@ -679,6 +701,18 @@ const Products = () => {
   }, []);
 
 
+  // Preload the first few visible product images
+  useEffect(() => {
+    if (!isLoading && filteredProducts.length > 0) {
+      // Preload only the first 4 visible products
+      filteredProducts.slice(0, 4).forEach(product => {
+        if (product.image) {
+          preloadImage(product.image);
+        }
+      });
+    }
+  }, [filteredProducts, isLoading, preloadImage]);
+
   useEffect(() => {
     // Filter products based on category and search term
     let result = [...allProducts]
@@ -745,30 +779,26 @@ const Products = () => {
             <span>{Math.round(loadingProgress)}%</span>
           </div>
           
-          {/* Fixed minimal skeleton count for faster rendering */}
-          <SkeletonLoader 
-            count={4} 
-            viewMode={viewMode} 
-          />
+
         </>
       ) : (
         <>
           {/* Hero Section */}
-          <div className="bg-gradient-to-r from-amber-500 to-red-600 text-white py-16">
+          <div className="bg-gradient-to-r from-amber-700 to-red-700 text-white py-20 shadow-xl">
             <div className="container mx-auto px-4">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fadeIn">Premium Organic Spices</h1>
-              <p className="text-xl md:text-2xl max-w-2xl animate-fadeIn animation-delay-200">From our farms to your kitchen. Experience the authentic taste of premium quality spices.</p>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-fadeIn tracking-tight">Premium Organic Spices</h1>
+              <p className="text-xl md:text-2xl max-w-2xl animate-fadeIn animation-delay-200 opacity-90">From our farms to your kitchen. Experience the authentic taste of premium quality spices.</p>
             </div>
           </div>
 
       {/* Filters and Search */}
       <div className="container mx-auto px-4 py-8 animate-fadeIn animation-delay-300">
-        <div className="bg-white rounded-lg shadow-md p-4 mb-8 transition-all duration-300 hover:shadow-lg">
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8 transition-all duration-300 hover:shadow-xl border border-amber-100">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="text-gray-500" size={20} />
+            <div className="flex items-center gap-3">
+              <Filter className="text-amber-600" size={20} />
               <select 
-                className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors duration-200"
+                className="border border-amber-200 rounded-md px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors duration-200 text-gray-700 font-medium"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -779,7 +809,7 @@ const Products = () => {
               </select>
               
               <select 
-                className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors duration-200"
+                className="border border-amber-200 rounded-md px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors duration-200 text-gray-700 font-medium"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
@@ -793,24 +823,24 @@ const Products = () => {
             <div className="relative flex-1 max-w-md">
               <input 
                 type="text" 
-                placeholder="Search products..." 
-                className="w-full border rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors duration-200"
+                placeholder="Search premium spices..." 
+                className="w-full border border-amber-200 rounded-md pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors duration-200 shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-3 text-amber-600" size={18} />
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button 
-                className={`p-2 rounded-md transition-colors duration-200 ${viewMode === 'grid' ? 'bg-amber-100 text-amber-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`p-2.5 rounded-md transition-all duration-200 shadow-sm ${viewMode === 'grid' ? 'bg-gradient-to-r from-amber-600 to-red-600 text-white' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'}`}
                 onClick={() => setViewMode('grid')}
                 aria-label="Grid view"
               >
                 <Grid size={20} />
               </button>
               <button 
-                className={`p-2 rounded-md transition-colors duration-200 ${viewMode === 'list' ? 'bg-amber-100 text-amber-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`p-2.5 rounded-md transition-all duration-200 shadow-sm ${viewMode === 'list' ? 'bg-gradient-to-r from-amber-600 to-red-600 text-white' : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'}`}
                 onClick={() => setViewMode('list')}
                 aria-label="List view"
               >
@@ -822,39 +852,38 @@ const Products = () => {
 
         {/* Products Display */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow-md animate-fadeIn">
-            <h3 className="text-xl font-medium text-gray-600">No products found</h3>
-            <p className="text-gray-500 mt-2">Try changing your search or filter criteria</p>
-          </div>
-        ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredProducts.map((product, index) => (
-              <LazyProductCard 
-                key={product.id} 
-                product={product}
-                index={index}
-                viewMode={viewMode}
-                calculateDiscount={calculateDiscount}
-              />
-            ))}
+          <div className="text-center py-16 bg-white rounded-lg shadow-lg border border-amber-100 animate-fadeIn">
+            <h3 className="text-2xl font-semibold text-amber-700">No products found</h3>
+            <p className="text-gray-600 mt-3 max-w-md mx-auto">Try changing your search or filter criteria to find our premium spices</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {filteredProducts.map((product, index) => (
-              <LazyProductCard 
-                key={product.id} 
-                product={product}
-                index={index}
-                viewMode="list"
-                calculateDiscount={calculateDiscount}
-              />
-            ))}
-          </div>
+          <>
+            <div className={`${viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6' : 'space-y-6'}`}>
+              {filteredProducts.map((product, index) => (
+                <LazyProductCard 
+                  key={product.id} 
+                  product={product}
+                  index={index}
+                  viewMode={viewMode}
+                  calculateDiscount={calculateDiscount}
+                />
+              ))}
+            </div>
+            {/* Load More Button */}
+            <div className="text-center mt-16 mb-8">
+              <button 
+                // TODO: Implement onClick functionality to load more products
+                className="bg-gradient-to-r from-amber-600 to-red-600 text-white font-bold py-3.5 px-10 rounded-full hover:from-amber-700 hover:to-red-700 transition-all duration-300 shadow-md transform hover:-translate-y-1"
+              >
+                Discover More
+              </button>
+            </div>
+          </>
         )}
       </div>
       </>
     )}
-      </div>
+    </div>
   );
 }
 
