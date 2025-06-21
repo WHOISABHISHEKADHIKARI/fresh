@@ -119,7 +119,7 @@ const LazyProductCard = ({ product, index, viewMode, calculateDiscount }) => {
             )}
           </div>
           <a 
-            href={`https://wa.me/9779865412482?text=I'm%20interested%20in%20buying%20${encodeURIComponent(product.name)}%20for%20₨%20${formatPrice(product.price)}%20(${product.weight})`}
+            href={`https://wa.me/+9779865412482?text=I'm%20interested%20in%20buying%20${encodeURIComponent(product.name)}%20for%20₨%20${formatPrice(product.price)}%20(${product.weight})`}
             target="_blank" 
             rel="noopener noreferrer"
             className="w-full bg-gradient-to-r from-amber-600 to-red-600 text-white py-2.5 rounded-lg font-semibold hover:from-amber-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md"

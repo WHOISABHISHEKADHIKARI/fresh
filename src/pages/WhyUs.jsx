@@ -33,8 +33,8 @@ const WhyUs = () => {
     {
       icon: <Users className="w-12 h-12" />,
       title: 'Trusted by Thousands',
-      description: 'Over 5000+ satisfied customers including restaurants, hotels, retailers, and home cooks trust our products.',
-      stats: '5000+ Happy Customers'
+      description: 'Over 50,000+ satisfied customers including restaurants, hotels, retailers, and home cooks trust our products.',
+      stats: '50,000+ Happy Customers'
     },
     {
       icon: <Truck className="w-12 h-12" />,
